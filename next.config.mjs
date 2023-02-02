@@ -1,6 +1,7 @@
 import remarkGfm from "remark-gfm";
 import remarkPrism from "remark-prism";
 import createMDX from "@next/mdx";
+import createBundleAnalyzer from "@next/bundle-analyzer";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -39,6 +40,10 @@ const nextConfig = {
   },
 };
 
+const withBundleAnalyzer = createBundleAnalyzer({
+  enabled: true,
+});
+
 const withMDX = createMDX({
   extension: /\.mdx?$/,
   options: {
@@ -47,4 +52,7 @@ const withMDX = createMDX({
   },
 });
 
-export default withMDX(nextConfig);
+const plugins = [withBundleAnalyzer, withMDX];
+const main = plugins.reduce((acc, next) => next(acc), nextConfig );
+
+export default main;
