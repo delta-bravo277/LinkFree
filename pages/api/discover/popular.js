@@ -10,6 +10,11 @@ export default async function handler(req, res) {
       .json({ error: "Invalid request: GET request required" });
   }
 
+  const { statusCode, data } = await getPopularApi();
+  res.status(statusCode).json(data);
+}
+
+export async function getPopularApi() {
   await connectMongo();
 
   let profiles = [];
@@ -24,13 +29,23 @@ export default async function handler(req, res) {
   }
 
   if (profiles.length === 0) {
-    return res.status(404).json([]);
+    return {
+      statusCode: 404,
+      data: []
+    };
   }
 
   const profilesWithStats = await loadProfiles(
-    profiles.map((profile) => profile._doc)
+    profiles.map((profile) =>{
+      const data = profile._doc;
+      profile._id = profile._id.toString();
+      return data;
+    })
   );
 
   const selectedPopularProfiles = profilesWithStats.slice(0, 5);
-  res.status(200).json(selectedPopularProfiles);
+  return {
+    statusCode: 200,
+    data: selectedPopularProfiles
+  };
 }

@@ -10,6 +10,11 @@ export default async function handler(req, res) {
       .json({ error: "Invalid request: GET request required" });
   }
 
+  const { statusCode, data } = await getRandomApi();
+  res.status(statusCode).json(data);
+}
+
+export async function getRandomApi() {
   await connectMongo();
 
   let profiles = [];
@@ -23,10 +28,22 @@ export default async function handler(req, res) {
   }
 
   if (profiles.length === 0) {
-    return res.status(404).json([]);
+    return {
+      statusCode: 404,
+      data: []
+    };
   }
 
-  const fullRandomProfiles = await loadProfiles(profiles);
+  let fullRandomProfiles = await loadProfiles(profiles);
+  fullRandomProfiles = fullRandomProfiles.map((profile) =>{
+    return {
+      ...profile,
+      _id: profile._id.toString(),
+    };
+  });
 
-  res.status(200).json(fullRandomProfiles);
+  return {
+    statusCode: 200,
+    data: fullRandomProfiles
+  };
 }

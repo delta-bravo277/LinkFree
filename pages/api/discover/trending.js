@@ -10,6 +10,12 @@ export default async function handler(req, res) {
       .json({ error: "Invalid request: GET request required" });
   }
 
+  const { statusCode, data } = await getTrendingApi();
+  res.status(statusCode).json(data);
+}
+
+export async function getTrendingApi() {
+
   await connectMongo();
 
   let getProfiles = [];
@@ -47,12 +53,26 @@ export default async function handler(req, res) {
 
   // check for db results
   if (getProfiles.length === 0) {
-    return res.status(404).json([]);
+    return {
+      statusCode: 404,
+      data: []
+    };
   }
 
   // merge profiles with their profile views if set to public
+  console.log(getProfiles)
   const profiles = await loadProfiles(getProfiles);
 
-  const slicedProfiles = profiles.slice(0, 5);
-  res.status(200).json(slicedProfiles);
+  const slicedProfiles = profiles.slice(0, 5)
+    .map((profile) =>{
+      return {
+        ...profile,
+        _id: profile._id.toString(),
+      };
+    });
+
+  return {
+    statusCode: 200,
+    data: slicedProfiles
+  };
 }

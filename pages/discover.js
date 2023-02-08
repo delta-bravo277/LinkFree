@@ -4,6 +4,9 @@ import UserCard from "../components/user/UserCard";
 import Page from "../components/Page";
 import { useState } from "react";
 import { TbRefresh } from "react-icons/tb";
+import { getPopularApi } from "./api/discover/popular";
+import { getRandomApi } from "./api/discover/random";
+import { getTrendingApi } from "./api/discover/trending";
 
 export async function getServerSideProps(context) {
   let data = {
@@ -12,30 +15,24 @@ export async function getServerSideProps(context) {
     trending: [],
   };
 
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/discover/popular`
-    );
-    data.popular = await res.json();
-  } catch (e) {
+  const popular = await getPopularApi();
+  if (popular.statusCode === 200) {
+    data.popular = popular.data;
+  } else {
     console.log("ERROR loading popular profiles", e);
   }
 
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/discover/random`
-    );
-    data.random = await res.json();
-  } catch (e) {
+  const random = await getRandomApi();
+  if (random.statusCode === 200) {
+    data.random = random.data;
+  } else {
     console.log("ERROR loading random profiles", e);
   }
 
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/discover/trending`
-    );
-    data.trending = await res.json();
-  } catch (e) {
+  const trending = await getTrendingApi();
+  if (trending.statusCode === 200) {
+    data.trending = trending.data;
+  } else {
     console.log("ERROR loading trending profiles", e);
   }
 
