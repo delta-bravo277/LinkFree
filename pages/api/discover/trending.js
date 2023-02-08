@@ -60,7 +60,6 @@ export async function getTrendingApi() {
   }
 
   // merge profiles with their profile views if set to public
-  console.log(getProfiles)
   const profiles = await loadProfiles(getProfiles);
 
   const slicedProfiles = profiles.slice(0, 5)
