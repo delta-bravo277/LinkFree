@@ -13,9 +13,14 @@ export default async function handler(req, res) {
       .status(400)
       .json({ error: "Invalid request: GET request required" });
   }
-
-  await connectMongo();
   const { username } = req.query;
+
+  const { statusCode, data } = await getUsernameApi(username);
+  res.status(statusCode).json(data);
+}
+
+export async function getUsernameApi(username) {
+  await connectMongo();
   let log;
   log = logger.child({ username: username });
 
@@ -23,7 +28,12 @@ export default async function handler(req, res) {
 
   if (!data.username) {
     logger.error(`failed loading profile username: ${username}`);
-    return res.status(404).json({ error: `${username} not found` });
+    return {
+      statusCode: 404,
+      data: {
+        error: `${username} not found`
+      }
+    };
   }
 
   const date = new Date();
@@ -69,7 +79,7 @@ export default async function handler(req, res) {
     } catch (e) {
       log.error(
         e,
-        `failed to incremente profile stats for username: ${username}`
+        `failed to increment profile stats for username: ${username}`
       );
     }
   }
@@ -93,7 +103,7 @@ export default async function handler(req, res) {
     } catch (e) {
       log.error(
         e,
-        "failed to increment profile stats for usernanme: ${username}"
+        "failed to increment profile stats for username: ${username}"
       );
     }
   }
@@ -146,7 +156,13 @@ export default async function handler(req, res) {
   }
 
   if (!data.displayStatsPublic) {
-    return res.status(200).json({ username, ...data });
+    return {
+      statusCode: 200,
+      data: {
+        username,
+        ...data
+      }
+    };
   }
 
   const latestProfile = await Profile.findOne({ username });
@@ -169,5 +185,8 @@ export default async function handler(req, res) {
     }),
   };
 
-  res.status(200).json(profileWithStats);
+  return {
+    statusCode: 200,
+    data: profileWithStats
+  };
 }

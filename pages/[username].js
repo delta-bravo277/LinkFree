@@ -16,25 +16,19 @@ import UserMilestones from "../components/user/UserMilestones";
 import UserTestimonials from "../components/user/UserTestimonials";
 import UserEvents from "../components/user/UserEvents";
 import Page from "../components/Page";
+import {getUsernameApi} from "./api/users/[username]/index";
 
 export async function getServerSideProps(context) {
   const { req } = context;
   const username = context.query.username;
   let log;
   log = logger.child({ username: username, ip: requestIp.getClientIp(req) });
-  let data = {};
 
-  try {
-    const resUser = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${username}`
-    );
-    data = await resUser.json();
+  const { statusCode, data } = await getUsernameApi(username);
+  if (statusCode === 200) {
     log.info(`data loaded for username: ${username}`);
-  } catch (e) {
+  } else {
     log.error(e, `profile loading failed for username: ${username}`);
-  }
-
-  if (!data.username) {
     return {
       redirect: {
         destination: `/search?username=${username}`,
